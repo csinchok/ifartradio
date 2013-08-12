@@ -235,10 +235,10 @@ if __name__ == '__main__':
         WORKERS.append(worker)
         worker.start()
 
-    # while True:
-    #     try:
-    #         print("queue size: %s" % queue.qsize())
-    #     except NotImplementedError:
-    #         pass
-    #     time.sleep(60)
+    while True:
+        try:
+            print("queue size: %s" % queue.qsize())
+        except NotImplementedError:
+            pass
+        time.sleep(60)
     
