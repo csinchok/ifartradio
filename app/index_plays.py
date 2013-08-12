@@ -4,6 +4,7 @@ import struct
 import pprint
 import signal
 import sys
+import time
 import datetime
 
 from multiprocessing import Process, Queue
@@ -137,14 +138,15 @@ class Worker(Process):
                             doc = s.data
                             doc['description'] = s.description
                             self.es.index(settings.ES_INDEX, 'play', doc, parent=station_id)
+                            last_playing_time = datetime.datetime.now()
 
-            if last_playing is None:
-                last_playing = datetime.datetime.now()
+            if last_playing_time is None:
+                last_playing_time = datetime.datetime.now()
 
             # A valid station should be playing a song at least once every 20 minutes.
-            if last_playing > datetime.datetime.now() - datetime.timedelta(minutes=20):
+            if last_playing_time > (datetime.datetime.now() - datetime.timedelta(minutes=20)):
                 # Send it around again....
-                queue.put((station_id, shoutcast_url, metadata))
+                queue.put((station_id, shoutcast_url, metadata, last_playing_time))
 
 WORKERS_COUNT = 10
 WORKERS = []
@@ -233,7 +235,10 @@ if __name__ == '__main__':
         WORKERS.append(worker)
         worker.start()
 
-    while True:
-        print("queue size: %s" % queue.qsize())
-        time.sleep(60)
+    # while True:
+    #     try:
+    #         print("queue size: %s" % queue.qsize())
+    #     except NotImplementedError:
+    #         pass
+    #     time.sleep(60)
     
