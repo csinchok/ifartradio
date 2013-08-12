@@ -68,8 +68,9 @@ class StreamTitle(object):
 
 class Worker(Process):
 
-    def __init__(self, queue):
+    def __init__(self, queue, number=-1):
         self.__queue = queue
+        self.number = number
         self.es = ElasticSearch(settings.ES_URL)
         Process.__init__(self)
 
@@ -111,7 +112,7 @@ class Worker(Process):
             # We really need the metaint, so that we know where to look for metadata
             if 'icy-metaint' not in headers:
                 print("No icy-metaint!")
-                return
+                continue
             metaint = int(headers.get('icy-metaint'))
 
             data = r.raw.read(metaint)
@@ -134,7 +135,7 @@ class Worker(Process):
                     if key == 'StreamTitle':
                         s = StreamTitle(value)
                         if s.is_song():
-                            print("%s : %s (last was: [%s])" % (s.description, s.data.get('text'), last_playing))
+                            print("[worker %s] %s : %s" % (self.number, s.description, s.data.get('text')))
                             doc = s.data
                             doc['description'] = s.description
                             self.es.index(settings.ES_INDEX, 'play', doc, parent=station_id)
@@ -146,7 +147,7 @@ class Worker(Process):
             # A valid station should be playing a song at least once every 20 minutes.
             if last_playing_time > (datetime.datetime.now() - datetime.timedelta(minutes=20)):
                 # Send it around again....
-                queue.put((station_id, shoutcast_url, metadata, last_playing_time))
+                self.__queue.put((station_id, shoutcast_url, metadata, last_playing_time))
 
 WORKERS_COUNT = 10
 WORKERS = []
@@ -231,13 +232,13 @@ if __name__ == '__main__':
 
     WORKERS = [] * WORKERS_COUNT
     for i in xrange(WORKERS_COUNT):
-        worker = Worker(queue)
+        worker = Worker(queue, number=i)
         WORKERS.append(worker)
         worker.start()
 
     while True:
         try:
-            print("queue size: %s" % queue.qsize())
+            print(" *** queue size: %s ***" % queue.qsize())
         except NotImplementedError:
             pass
         time.sleep(60)
