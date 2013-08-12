@@ -22,6 +22,9 @@ def push():
 	for subdir in ['static/', 'app/']:
 		rsync_project(os.path.join(REMOTE_DIR, subdir), local_dir=os.path.join(LOCAL_DIR, subdir), delete=True, exclude="settings.py")
 
+def cleanup():
+	local('rm -r %s' % LOCAL_DIR)
+
 def deploy():
 	archive()
 	push()

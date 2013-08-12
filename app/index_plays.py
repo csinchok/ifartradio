@@ -151,7 +151,7 @@ class Worker(Process):
                 # Send it around again....
                 self.__queue.put((station_id, shoutcast_url, metadata, last_playing_time))
 
-WORKERS_COUNT = 4
+WORKERS_COUNT = 15
 WORKERS = []
 
 def handler(signum, frame):
