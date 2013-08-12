@@ -205,7 +205,7 @@ if __name__ == '__main__':
                 "filter":{
                     "bool":{
                         "must":{
-                            "has_children": {
+                            "has_child": {
                                 "type": "play",
                                 "query": {
                                     "match_all": {}
