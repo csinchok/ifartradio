@@ -56,6 +56,8 @@ class StreamTitle(object):
         self.data = data
 
     def is_song(self):
+        if self.description == "" and self.data.get('text') == '':
+            return False
         # This is maybe a little hack, but it looks like if more than one ID is set, it's a real song.
         non_zero = 0
         for value in self.data.values():
@@ -149,7 +151,7 @@ class Worker(Process):
                 # Send it around again....
                 self.__queue.put((station_id, shoutcast_url, metadata, last_playing_time))
 
-WORKERS_COUNT = 10
+WORKERS_COUNT = 4
 WORKERS = []
 
 
