@@ -52,7 +52,7 @@
     	$.ajax(
     		"http://" + document.domain + ":9200/radio/station/_search?size=50",
     		{
-    			type: "POST",
+    			type: "GET",
     			data: JSON.stringify(query),
     			success: function(data) {
     				$(".container").append('<div class="row"><h4>Currently playing <span class="label label-default">' + data.hits.total + '</span></h4></div>');
