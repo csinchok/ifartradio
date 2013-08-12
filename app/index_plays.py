@@ -148,7 +148,6 @@ class Worker(Process):
             if last_playing_time > (datetime.datetime.now() - datetime.timedelta(minutes=20)):
                 # Send it around again....
                 self.__queue.put((station_id, shoutcast_url, metadata, last_playing_time))
-            self.__queue.task_done()
 
 WORKERS_COUNT = 10
 WORKERS = []
