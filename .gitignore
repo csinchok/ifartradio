@@ -1,0 +1,8 @@
+*.py[cod]
+.Python
+
+# venv stuff
+bin
+lib
+share
+include
