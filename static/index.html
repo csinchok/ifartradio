@@ -50,7 +50,7 @@
     		}
 		};
     	$.ajax(
-    		"http://localhost:9200/radio/station/_search?size=50",
+    		"http://" + document.domain + ":9200/radio/station/_search?size=50",
     		{
     			type: "POST",
     			data: JSON.stringify(query),

@@ -6,3 +6,6 @@ bin
 lib
 share
 include
+
+# Special stuff
+app/settings.py
