@@ -154,7 +154,6 @@ class Worker(Process):
 WORKERS_COUNT = 4
 WORKERS = []
 
-
 def handler(signum, frame):
     print 'Shutting down...'
     for worker in WORKERS:
