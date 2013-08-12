@@ -37,7 +37,7 @@
     	var one_hour_ago = moment.utc().subtract('minutes', 3);
     	var query = {
     		"query": {
-	    		"top_children": {
+	    		"has_children": {
 	    			"type": "play",
 	    			"query": {
 	    				"range": {
