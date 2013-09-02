@@ -3,9 +3,10 @@ from pyelasticsearch.exceptions import ElasticHttpNotFoundError, IndexAlreadyExi
 import requests
 import time
 
+GEONAMES_USER = "demo"  # Change this to your own username
+IGNORED_GENRES = ("9", "15", "19")  # We only care about stations that play music.
 
 import settings
-
 
 es = ElasticSearch(settings.ES_URL)
 INDEX_NAME = settings.ES_INDEX
@@ -45,6 +46,46 @@ while failures < 200:
 		continue
 
 	failures = 0
-	es.index(INDEX_NAME, 'station', r.json(), id=r.json().get('id'))
+
+	crawled_data = r.json()
+	if crawled_data.get("primary_genre_id") in IGNORED_GENRES:
+		continue  # We don't care about talk radio etc
+
+	index_data = {
+		"band": crawled_data.get("band"),
+		"call_letters": crawled_data.get("call_letters"),
+		"city": crawled_data.get("city"),
+		"state": crawled_data.get("state"),
+		"country": crawled_data.get("country"),
+		"name": crawled_data.get("name"),
+		"description": crawled_data.get("description"),
+		"logo": crawled_data.get("logo"),
+		"twitter": crawled_data.get("twitter"),
+		"station_site": crawled_data.get("station_site"),
+		"primary_genre": crawled_data.get("primary_genre"),
+		"frequency": crawled_data.get("frequency"),
+		"shoutcast_url": crawled_data.get("shoutcast_url"),
+	}
+
+	# TODO: get lat, lon
+	if GEONAMES_USER != "demo":
+		params = {
+			"name_equals": index_data["city"],
+			"country": index_data["country"],
+			"adminCode1": index_data["state"],
+			"maxRows": 10,
+			"lang": "en",
+			"username": GEONAMES_USER,
+			"style": "medium"
+		}
+		geo_request = requests.get("http://api.geonames.org/searchJSON", params=params)
+		geonames = geo_request.json().get("geonames", [])
+		if geonames:
+			index_data["location"] = {
+				"lat": float(geonames[0]["lat"]),
+				"lon": float(geonames[0]["lon"])
+			}
+
+	es.index(INDEX_NAME, 'station', index_data, id=crawled_data.get('id'))
 
 print("Bailed after %d failures (pk %d)" % (failures, pk))
