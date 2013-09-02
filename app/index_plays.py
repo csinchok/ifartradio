@@ -122,7 +122,7 @@ class Worker(Process):
             length = struct.unpack('B', length)[0]
             metadata = r.raw.read(length * 16)
             r.close()
-            # Now we've got the metadata string! Yay! We'll just print it for now.
+            # Now we've got the metadata string!
             if metadata != last_playing:
                 stream_info = metadata.split(";")
                 for info in metadata.split(";"):
@@ -205,12 +205,12 @@ if __name__ == '__main__':
                 "filter":{
                     "bool":{
                         "must":{
-                            "has_child": {
-                                "type": "play",
-                                "query": {
-                                    "match_all": {}
-                                }
-                            }
+                            # "has_child": {
+                            #     "type": "play",
+                            #     "query": {
+                            #         "match_all": {}
+                            #     }
+                            # }
                         },
                         "should":{},
                         "must_not":{
