@@ -1,6 +1,7 @@
 import os
 
 from fabric.api import *
+from fabric.operations import put
 from fabric.contrib.project import rsync_project
 
 LOCAL_DIR = '/tmp/ifartradio'
@@ -19,6 +20,7 @@ def archive():
 	local('git archive HEAD | tar -x -C %s' % LOCAL_DIR)
 
 def push():
+	put(os.path.join(LOCAL_DIR, "supervisord.conf"), os.path.join(REMOTE_DIR, "supervisord.conf"))
 	for subdir in ['static/', 'app/']:
 		rsync_project(os.path.join(REMOTE_DIR, subdir), local_dir=os.path.join(LOCAL_DIR, subdir), delete=True, exclude="settings.py")
 
