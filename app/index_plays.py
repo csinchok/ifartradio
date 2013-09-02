@@ -1,4 +1,3 @@
-import requests
 import tempfile
 import struct
 import pprint
@@ -10,6 +9,8 @@ import datetime
 from multiprocessing import Process, Queue
 
 from pyelasticsearch import ElasticSearch
+
+import requests
 
 import settings
 
@@ -94,7 +95,10 @@ class Worker(Process):
                 break
             
             station_id, shoutcast_url, last_playing, last_playing_time = item
-            r = requests.get(shoutcast_url, headers={'Icy-Metadata': '1'}, stream=True)
+            try:
+                r = requests.get(shoutcast_url, headers={'Icy-Metadata': '1'}, stream=True)
+            except requests.exceptions.ConnectionError:
+                continue
             
             # Parse the headers
             headers = {}
@@ -116,10 +120,14 @@ class Worker(Process):
             if 'icy-metaint' not in headers:
                 print("No icy-metaint!")
                 continue
+
             metaint = int(headers.get('icy-metaint'))
 
             data = r.raw.read(metaint)
             length = r.raw.read(1)
+            if len(length) !== 1:
+                continue  # It seems like sometimes it's getting stuck here.
+
             length = struct.unpack('B', length)[0]
             metadata = r.raw.read(length * 16)
             r.close()
@@ -147,8 +155,8 @@ class Worker(Process):
             if last_playing_time is None:
                 last_playing_time = datetime.datetime.now()
 
-            # A valid station should be playing a song at least once every 20 minutes.
-            if last_playing_time > (datetime.datetime.now() - datetime.timedelta(minutes=20)):
+            # A valid station should be playing a song at least once every 30 minutes.
+            if last_playing_time > (datetime.datetime.now() - datetime.timedelta(minutes=30)):
                 # Send it around again....
                 self.__queue.put((station_id, shoutcast_url, metadata, last_playing_time))
 
