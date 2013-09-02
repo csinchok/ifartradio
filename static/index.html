@@ -187,7 +187,10 @@
             if(searchTerm != "") {
                 query.query.top_children.query.bool.should.push({
                     "match": {
-                        "text" : searchTerm
+                        "text": {
+                            "query": searchTerm,
+                            "operator" : "and"
+                        }                        
                     }
                 });
                 query.query.top_children.query.bool.minimum_should_match = 2;
