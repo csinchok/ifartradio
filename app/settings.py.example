@@ -1,2 +1,3 @@
 ES_URL = 'http://localhost:9200/'
 ES_INDEX = 'radio'
+GEONAMES_USER = 'demo'  # Change this to your own username

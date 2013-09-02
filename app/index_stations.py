@@ -3,7 +3,6 @@ from pyelasticsearch.exceptions import ElasticHttpNotFoundError, IndexAlreadyExi
 import requests
 import time
 
-GEONAMES_USER = "demo"  # Change this to your own username
 IGNORED_GENRES = ("9", "15", "19")  # We only care about stations that play music.
 
 import settings
@@ -68,14 +67,14 @@ while failures < 200:
 	}
 
 	# TODO: get lat, lon
-	if GEONAMES_USER != "demo":
+	if hasattr(settings, 'GEONAMES_USER') and settings.GEONAMES_USER != "demo":
 		params = {
 			"name_equals": index_data["city"],
 			"country": index_data["country"],
 			"adminCode1": index_data["state"],
 			"maxRows": 10,
 			"lang": "en",
-			"username": GEONAMES_USER,
+			"username": settings.GEONAMES_USER,
 			"style": "medium"
 		}
 		geo_request = requests.get("http://api.geonames.org/searchJSON", params=params)
@@ -83,7 +82,7 @@ while failures < 200:
 		if geonames:
 			index_data["location"] = {
 				"lat": float(geonames[0]["lat"]),
-				"lon": float(geonames[0]["lon"])
+				"lon": float(geonames[0]["lng"])
 			}
 
 	es.index(INDEX_NAME, 'station', index_data, id=crawled_data.get('id'))
