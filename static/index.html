@@ -32,11 +32,29 @@
             fill: red;
         }
 
+        .song-input {
+            width: 150px;
+        }
+
+        .time-input {
+            width: 100px;
+        }
+
     </style>
   </head>
   <body>
   	<div class="navbar navbar-fixed-top">
   		<a class="navbar-brand" href="/">I Fart Radio</a>
+        
+        <form class="navbar-form form-inline navbar-right" role="form">
+            <div class="form-group">
+                <span>Showing all <span class="label label-default station-count">#</span> stations that have played</span>
+                <input type="text" class="form-control song-input" placeholder="any song">
+                <span>in the last</span>
+                <input type="text" class="form-control time-input" placeholder="5 minutes">
+                <button type="submit" class="btn btn-default search-button">Search</button>
+            </div>
+        </form>
 	</div>
 	<div class="container">
 	</div>
@@ -86,9 +104,13 @@
         from = from || 0;
         size = size || 20;
         $.ajax("http://api.ifartradio.biz/radio/station/_search?size=" + size + "&from=" + from, {
-            type: "GET",
+            type: "POST",
             data: JSON.stringify(query),
             success: function(data) {
+                if(from === 0) {
+                    $(".station-count").html(data.hits.total);
+                }
+
                 for (var i=0;i<data.hits.hits.length;i++){
                     var loc = data.hits.hits[i]['_source']['location'];
                     if(loc !== undefined) {
@@ -109,8 +131,13 @@
         });
     }
 
+    function parseTime(searchTime) {
+        var args = searchTime.split(" ");
+        return moment.utc().subtract(args[1], parseInt(args[0]));
+    }
+
     $(document).ready(function() {
-        var one_hour_ago = moment.utc().subtract('minutes', 5);
+        var timeAgo = moment.utc().subtract('minutes', 5);
         var query = {
             "query": {
                 "top_children": {
@@ -118,7 +145,7 @@
                     "query": {
                         "range": {
                             "_timestamp": {
-                                "from": one_hour_ago.format(),
+                                "from": timeAgo.format(),
                             }
                         }
                     }
@@ -126,6 +153,48 @@
             }
         };
         plotStations(query);
+
+        $(".search-button").on('click', function(e) {
+            e.preventDefault();
+            var timeAgo = moment.utc().subtract('minutes', 5);
+            
+            var searchTime = $(".time-input").first().val();
+            if (searchTime != "") {
+                timeAgo = parseTime(searchTime);
+            }
+            var searchTerm = $(".song-input").first().val();
+            console.log(timeAgo.format())
+
+            var query = {
+                "query": {
+                    "top_children": {
+                        "type": "play",
+                        "query": {
+                            "bool": {
+                                "should": [{
+                                    "range": {
+                                        "_timestamp": {
+                                            "from": timeAgo.format(),
+                                        }
+                                    }
+                                }]
+                            }
+                        }
+                    }
+                }
+            };
+
+            if(searchTerm != "") {
+                query.query.top_children.query.bool.should.push({
+                    "match": {
+                        "text" : searchTerm
+                    }
+                });
+                query.query.top_children.query.bool.minimum_should_match = 2;
+            }
+            $("circle.station").remove();
+            plotStations(query);           
+        });
     });
     </script>
   </body>
