@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.background {
+  fill: none;
+  pointer-events: all;
+}
+
+#states {
+  fill: #aaa;
+}
+
+#state-borders {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.5px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.station {
+	fill: red;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+
+<script src="http://code.jquery.com/jquery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/moment.min.js"></script>
+<script>
+
+var width = 960,
+    height = 500;
+
+var projection = d3.geo.albersUsa()
+    .scale(1070)
+    .translate([width / 2, height / 2]);
+
+var path = d3.geo.path().projection(projection);
+
+var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
+
+var g = svg.append("g");
+
+var stations = [
+	{'name': 'test', 'lat': -112.07404, 'lon': 33.44838}
+]
+
+d3.json("/js/us.json", function(error, us) {
+  g.append("g")
+      .attr("id", "states")
+    .selectAll("path")
+      .data(topojson.feature(us, us.objects.states).features)
+    .enter().append("path")
+      .attr("d", path);
+
+  g.append("path")
+      .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+      .attr("id", "state-borders")
+      .attr("d", path);
+});
+
+
+function plotStations(query, from, size) {
+	from = from || 0;
+	size = size || 10;
+	$.ajax("http://www.ifartradio.com:9200/radio/station/_search?size=" + size + "&from=" + from, {
+		type: "GET",
+		data: JSON.stringify(query),
+		success: function(data) {
+			for (var i=0;i<data.hits.hits.length;i++){
+				var loc = data.hits.hits[i]['_source']['location'];
+				if(loc !== undefined) {
+					var coordinates = projection([loc.lon, loc.lat]);
+					g.append('svg:circle')
+					    .attr('cx', coordinates[0])
+					    .attr('cy', coordinates[1])
+					    .attr('class', 'station')
+					    .attr('r', 5);				
+				}
+
+				// appendStation(data.hits.hits[i]['_source']);
+			}	
+			if(data.hits.hits.length === size) {
+				plotStations(query, (from + size))
+			}
+		}
+	});
+}
+
+$(document).ready(function() {
+	var one_hour_ago = moment.utc().subtract('minutes', 5);
+	var query = {
+		"query": {
+    		"top_children": {
+    			"type": "play",
+    			"query": {
+    				"range": {
+    					"_timestamp": {
+    						"from": one_hour_ago.format(),
+    					}
+    				}
+    			}
+    		}
+		}
+	};
+	plotStations(query);
+});
+</script>

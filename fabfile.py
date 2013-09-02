@@ -14,7 +14,6 @@ def update_requirements():
 	with cd(REMOTE_DIR), prefix('source bin/activate'):
 		run('pip install -r %s' % os.path.join(REMOTE_DIR, 'app', 'requirements.txt'))
 
-
 def archive():
 	local('mkdir -p %s' % LOCAL_DIR)
 	local('git archive HEAD | tar -x -C %s' % LOCAL_DIR)
