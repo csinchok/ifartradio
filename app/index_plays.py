@@ -125,7 +125,7 @@ class Worker(Process):
 
             data = r.raw.read(metaint)
             length = r.raw.read(1)
-            if len(length) !== 1:
+            if len(length) != 1:
                 continue  # It seems like sometimes it's getting stuck here.
 
             length = struct.unpack('B', length)[0]
