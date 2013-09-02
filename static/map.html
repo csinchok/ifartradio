@@ -68,7 +68,7 @@ d3.json("/js/us.json", function(error, us) {
 
 function plotStations(query, from, size) {
 	from = from || 0;
-	size = size || 10;
+	size = size || 20;
 	$.ajax("http://api.ifartradio.biz/radio/station/_search?size=" + size + "&from=" + from, {
 		type: "GET",
 		data: JSON.stringify(query),
