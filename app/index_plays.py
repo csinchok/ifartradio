@@ -205,14 +205,7 @@ if __name__ == '__main__':
                 },
                 "filter":{
                     "bool":{
-                        "must":{
-                            # "has_child": {
-                            #     "type": "play",
-                            #     "query": {
-                            #         "match_all": {}
-                            #     }
-                            # }
-                        },
+                        "must":{},
                         "should":{},
                         "must_not":{
                             "missing":{
