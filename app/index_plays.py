@@ -73,6 +73,7 @@ class Worker(Process):
     def __init__(self, queue, number=-1):
         self.__queue = queue
         self.number = number
+        self.name = "index_plays worker #%d" % number
         self.es = ElasticSearch(settings.ES_URL)
         Process.__init__(self)
 
