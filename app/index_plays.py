@@ -165,7 +165,7 @@ def handler(signum, frame):
 if __name__ == '__main__':
     queue = Queue()
 
-    signal.signal(signal.SIGINT, handler)
+    signal.signal(signal.SIGTERM, handler)
 
     es = ElasticSearch(settings.ES_URL)
 
