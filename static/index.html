@@ -81,11 +81,7 @@
 
     var g = svg.append("g");
 
-    var stations = [
-        {'name': 'test', 'lat': -112.07404, 'lon': 33.44838}
-    ]
-
-    d3.json("/js/us.json", function(error, us) {
+    d3.json("/js/us2.json", function(error, us) {
       g.append("g")
           .attr("id", "states")
         .selectAll("path")
