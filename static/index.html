@@ -108,7 +108,10 @@
                 }
 
                 for (var i=0;i<data.hits.hits.length;i++){
-                    var loc = data.hits.hits[i]['_source']['location'];
+                    if (data.hits.hits[i].fields === undefined) {
+                        continue
+                    }
+                    var loc = data.hits.hits[i]['fields']['location'];
                     if(loc !== undefined) {
                         var coordinates = projection([loc.lat, loc.lon]);
                         g.append('svg:circle')
@@ -135,6 +138,7 @@
     $(document).ready(function() {
         var timeAgo = moment.utc().subtract('minutes', 5);
         var query = {
+            "fields": ["location"],
             "query": {
                 "top_children": {
                     "type": "play",
@@ -159,9 +163,9 @@
                 timeAgo = parseTime(searchTime);
             }
             var searchTerm = $(".song-input").first().val();
-            console.log(timeAgo.format())
 
             var query = {
+                "fields": ['location'],
                 "query": {
                     "top_children": {
                         "type": "play",
@@ -173,7 +177,7 @@
                                             "from": timeAgo.format(),
                                         }
                                     }
-                                }]
+                                }],
                             }
                         }
                     }
