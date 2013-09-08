@@ -139,8 +139,8 @@ while failures < 200:
 		geojson["features"].pop()  # Remove "Alternate color"
 		coords = geojson["features"][0]["geometry"]["coordinates"]
 		index_data["location"] = {
-			"lat": float(coords[0]),
-			"lon": float(coords[1])
+			"lat": float(coords[1]),
+			"lon": float(coords[0])
 		}
 		index_data["geojson"] = json.dumps(geojson)
 
