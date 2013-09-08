@@ -98,7 +98,7 @@
 
     function plotStations(query, from, size) {
         from = from || 0;
-        size = size || 20;
+        size = size || 50;
         $.ajax("http://api.ifartradio.biz/radio/station/_search?size=" + size + "&from=" + from, {
             type: "POST",
             data: JSON.stringify(query),
@@ -110,7 +110,7 @@
                 for (var i=0;i<data.hits.hits.length;i++){
                     var loc = data.hits.hits[i]['_source']['location'];
                     if(loc !== undefined) {
-                        var coordinates = projection([loc.lon, loc.lat]);
+                        var coordinates = projection([loc.lat, loc.lon]);
                         g.append('svg:circle')
                             .attr('cx', coordinates[0])
                             .attr('cy', coordinates[1])
